@@ -4,6 +4,7 @@ import pytest
 import gpiod
 import sys
 import errno
+from pathlib import Path
 
 gpio_unavail = (24, 23, 1, 0)
 
@@ -29,8 +30,9 @@ def gpio_request_pair(chip, _in, out, int=False):
     #print('gpio_request_pair:', _in, out)
     in_line = chip.get_line(_in)
     out_line = chip.get_line(out)
-    in_line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_EV_BOTH_EDGES if int else gpiod.LINE_REQ_DIR_IN)
-    out_line.request(consumer=sys.argv[0], type=gpiod.LINE_REQ_DIR_OUT)
+    label = Path(sys.argv[0]).name
+    in_line.request(consumer=label, type=gpiod.LINE_REQ_EV_BOTH_EDGES if int else gpiod.LINE_REQ_DIR_IN)
+    out_line.request(consumer=label, type=gpiod.LINE_REQ_DIR_OUT)
     return in_line, out_line
 
 def gpio_in_out(chip, in_gpio, out_gpio):
