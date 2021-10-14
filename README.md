@@ -22,4 +22,4 @@ See [wiki](https://github.com/notro/pico-usb-io-board/wiki) for more information
 
 Unless otherwise stated, all code and data is licensed under a [CC0 license](https://creativecommons.org/publicdomain/zero/1.0/).
 
-The [Openmoko Product ID](https://github.com/openmoko/openmoko-usb-oui) 1d50:6170 can only be used under a [FOSS license](https://github.com/openmoko/openmoko-usb-oui#conditions).
+The [Openmoko Product ID](https://github.com/openmoko/openmoko-usb-oui) [1d50:6170](https://github.com/openmoko/openmoko-usb-oui/pull/35) can only be used under a [FOSS license](https://github.com/openmoko/openmoko-usb-oui#conditions).
