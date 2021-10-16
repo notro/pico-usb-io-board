@@ -12,9 +12,11 @@
 
 #include <stdio.h>
 #include "pico/stdlib.h"
+#include "hardware/sync.h"
 #include "dln2.h"
 
-#define LOG1    printf
+#define LOG1    //printf
+#define LOG2    //printf
 
 #define DLN2_GPIO_CMD(cmd)       DLN2_CMD(cmd, DLN2_MODULE_GPIO)
 
@@ -42,6 +44,28 @@
 #else
   #define LED_PIN   0xff    // out of bounds value that will never match
 #endif
+
+#define get_bit(n, var)     ((var >> (n)) & 1U)
+
+#define assign_bit(n, var, val)     \
+    do{                             \
+        if (val)                    \
+            (var) |= 1U << (n);     \
+        else                        \
+            (var) &= ~(1U << (n));  \
+    } while (0)
+
+static uint32_t prev_values;
+
+struct dln2_gpio_event {
+    uint8_t gpio;
+    uint8_t events;
+    uint8_t value;
+};
+
+#define DLN2_GPIO_MAX_EVENTS    32
+static struct dln2_gpio_event dln2_gpio_events[DLN2_GPIO_MAX_EVENTS];
+uint16_t dln2_gpio_event_count;
 
 static const char *dln2_gpio_id_to_name(uint16_t id)
 {
@@ -131,8 +155,8 @@ static bool dln2_gpio_pin_enable(struct dln2_slot *slot, bool enable)
 
         if (pin != LED_PIN) {
             gpio_set_function(pin, GPIO_FUNC_SIO);
+            // http://dlnware.com/dll/Default-Configuration
             gpio_set_dir(pin, GPIO_IN);
-            // DLN-2 default:
             gpio_pull_up(pin);
         }
     } else {
@@ -160,21 +184,30 @@ static bool dln2_gpio_pin_set_event_cfg(struct dln2_slot *slot)
     if (!dln2_pin_is_requested(cmd->pin, DLN2_MODULE_GPIO))
         return dln2_response_error(slot, DLN2_RES_INVALID_PIN_NUMBER);
 
+    if (cmd->period)
+        return dln2_response_error(slot, DLN2_RES_INVALID_EVENT_PERIOD);
+
     if (cmd->pin == LED_PIN)
         return dln2_response_error(slot, DLN2_RES_INVALID_VALUE);
+
+    assign_bit(cmd->pin, prev_values, gpio_get(cmd->pin));
 
     switch (cmd->type) {
     case DLN2_GPIO_EVENT_NONE:
         gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_LEVEL_LOW | GPIO_IRQ_LEVEL_HIGH | GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, false);
         break;
+    // The Linux driver always uses this so we don't know which edge(s) it actually cares about.
     case DLN2_GPIO_EVENT_CHANGE:
         gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE, true);
         break;
+    // The Linux driver doesn't use these, maybe because they were mistaken to be only level
+    // interrupts, but with period=0 they are actually edge interrupts according to the docs:
+    // http://dlnware.com/dll/DLN_GPIO_EVENT_LEVEL_HIGH-Events
     case DLN2_GPIO_EVENT_LVL_HIGH:
-        gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_LEVEL_HIGH, true);
+        gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_EDGE_RISE, true);
         break;
     case DLN2_GPIO_EVENT_LVL_LOW:
-        gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_LEVEL_LOW, true);
+        gpio_set_irq_enabled(cmd->pin, GPIO_IRQ_EDGE_FALL, true);
         break;
     default:
         return dln2_response_error(slot, DLN2_RES_INVALID_EVENT_TYPE);
@@ -196,13 +229,8 @@ bool dln2_handle_gpio(struct dln2_slot *slot)
             return dln2_response_error(slot, DLN2_RES_INVALID_COMMAND_SIZE);
         return dln2_response_u16(slot, DLN2_GPIO_NUM_PINS);
     case DLN2_GPIO_SET_DEBOUNCE:
-/*
- * Linux:
- * @PIN_CONFIG_INPUT_DEBOUNCE: this will configure the pin to debounce mode,
- *  which means it will wait for signals to settle when reading inputs. The
- *  argument gives the debounce time in usecs. Setting the
- *  argument to zero turns debouncing off.
- */
+        // The Linux driver can set the default debounce value, but it does not enable it for the pin?!
+        // The DLN-2 adapter does not support debounce, but 4M and 4S do.
         LOG1("DLN2_GPIO_SET_DEBOUNCE\n");
         return dln2_response_error(slot, DLN2_RES_COMMAND_NOT_SUPPORTED);
     case DLN2_GPIO_PIN_GET_VAL:
@@ -239,65 +267,122 @@ bool dln2_handle_gpio(struct dln2_slot *slot)
     }
 }
 
-
-/*
-#define DLN2_GPIO_EVENT_NONE            0
-#define DLN2_GPIO_EVENT_CHANGE          1
-#define DLN2_GPIO_EVENT_LVL_HIGH        2
-#define DLN2_GPIO_EVENT_LVL_LOW         3
-
-    GPIO_IRQ_LEVEL_LOW = 0x1u,
-    GPIO_IRQ_LEVEL_HIGH = 0x2u,
-    GPIO_IRQ_EDGE_FALL = 0x4u,
-    GPIO_IRQ_EDGE_RISE = 0x8u,
-
-dln2_gpio_event: gpio=12 events=0x4
-dln2_gpio_event: gpio=12 events=0xc
-dln2_gpio_event: gpio=12 events=0x8
-
-
-dln2_gpio_event: gpio=12 events=0x4
-dln2_gpio_event: gpio=12 events=0x8
-
-*/
-
-// TODO: Handle rise and fall set in the same interrupt: events=0xc
-
-void dln2_gpio_event(uint gpio, uint32_t events) {
-    // Couldn't find this in the docs, the Linux driver ignores count and type, what are they for?
+static bool dln2_gpio_queue_event(struct dln2_gpio_event *event)
+{
     struct {
         uint16_t count;
         uint8_t type;
         uint16_t pin;
         uint8_t value;
-    } TU_ATTR_PACKED *event;
+    } TU_ATTR_PACKED *ev;
 
-    LOG1("%s: gpio=%u events=0x%x\n", __func__, gpio, events);
+    LOG1("%s(gpio=%u, value=%u)\n", __func__, event->gpio, event->value);
 
     struct dln2_slot *slot = dln2_get_slot();
     if (!slot) {
         LOG1("Run out of slots!\n");
-        return;
+        LOG2("-\n");
+        return false;
     }
 
     struct dln2_header *hdr = dln2_slot_header(slot);
-    hdr->size = sizeof(*hdr) + sizeof(*event);
+    hdr->size = sizeof(*hdr) + sizeof(*ev);
     hdr->id = DLN2_GPIO_CONDITION_MET_EV;
     hdr->echo = 0;
     hdr->handle = DLN2_HANDLE_EVENT;
 
-    event = dln2_slot_header_data(slot);
-    event->count = 0;
-    event->type = 0;
-    event->pin = gpio;
-    event->value = gpio_get(gpio);
+    ev = dln2_slot_header_data(slot);
+    // The Linux driver ignores count and type
+    ev->count = dln2_gpio_event_count;
+    ev->type = 0;
+    ev->pin = event->gpio;
+    ev->value = event->value;
 
     dln2_print_slot(slot);
     dln2_queue_slot_in(slot);
+
+    return true;
+}
+
+void dln2_gpio_task(void)
+{
+    bool queued;
+
+    do {
+        queued = false;
+        uint32_t ints = save_and_disable_interrupts();
+
+        if (dln2_gpio_events[0].events) {
+            if (dln2_gpio_queue_event(&dln2_gpio_events[0])) {
+                for (int i = 0; i < (DLN2_GPIO_MAX_EVENTS - 1); i++) {
+                    dln2_gpio_events[i] = dln2_gpio_events[i + 1];
+                }
+                dln2_gpio_events[DLN2_GPIO_MAX_EVENTS - 1].events = 0;
+                queued = true;
+            }
+        }
+        restore_interrupts(ints);
+    } while (queued);
+}
+
+static void dln2_gpio_irq_callback(uint gpio, uint32_t events)
+{
+    if (gpio >= DLN2_GPIO_NUM_PINS)
+        return;
+
+    bool prev_value = get_bit(gpio, prev_values);
+    bool value;
+
+    if (events == (GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE))
+        value = gpio_get(gpio);
+    else if (events == GPIO_IRQ_EDGE_FALL)
+        value = 0;
+    else if (events == GPIO_IRQ_EDGE_RISE)
+        value = 1;
+    else
+        return;
+
+    if (events == (GPIO_IRQ_EDGE_FALL | GPIO_IRQ_EDGE_RISE))
+        LOG2("B");
+    else if (events == GPIO_IRQ_EDGE_FALL)
+        LOG2("F");
+    else if (events == GPIO_IRQ_EDGE_RISE)
+        LOG2("R");
+    else {
+        LOG2("N\n");
+        return;
+    }
+
+    LOG1("%s: gpio=%u events=0x%x value=%u prev_value=%u %s\n",
+         __func__, gpio, events, value, prev_value, prev_value == value ? "SKIP" : "");
+
+    if (prev_value == value) {
+        LOG2(" X\n");
+        return;
+    }
+
+    assign_bit(gpio, prev_values, value);
+    dln2_gpio_event_count++;
+
+    uint i;
+    for (i = 0; i < DLN2_GPIO_MAX_EVENTS; i++) {
+        if (!dln2_gpio_events[i].events)
+            break;
+    }
+
+    if (i == DLN2_GPIO_MAX_EVENTS) {
+        LOG1("dln2_gpio_events is FULL\n");
+        return;
+    }
+
+    dln2_gpio_events[i].gpio = gpio;
+    dln2_gpio_events[i].events = events;
+    dln2_gpio_events[i].value = value;
+    LOG2("%u\n", value);
 }
 
 void dln2_gpio_init(void)
 {
     // It's not possible to just set the callback, so use the board led as a dummy gpio
-    gpio_set_irq_enabled_with_callback(25, 0, false, &dln2_gpio_event);
+    gpio_set_irq_enabled_with_callback(25, 0, false, &dln2_gpio_irq_callback);
 }

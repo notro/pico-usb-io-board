@@ -45,6 +45,7 @@ int main(void)
     while (1)
     {
         tud_task();
+        dln2_gpio_task();
     }
 
     return 0;

@@ -1,2 +1,6 @@
 build/
 __pycache__
+
+gpio_pulse
+!gpio_pulse/
+*.o

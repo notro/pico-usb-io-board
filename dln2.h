@@ -118,6 +118,7 @@ static inline void put_unaligned_le16(uint16_t val, void *p)
 #define DLN2_RES_INVALID_EVENT_TYPE                         0xA9
 #define DLN2_RES_PIN_NOT_CONNECTED_TO_MODULE                0xAA
 #define DLN2_RES_INVALID_PIN_NUMBER                         0xAB
+#define DLN2_RES_INVALID_EVENT_PERIOD                       0xAC
 #define DLN2_RES_INVALID_BUFFER_SIZE                        0xAE
 #define DLN2_RES_SPI_MASTER_INVALID_SS_VALUE                0xB9
 #define DLN2_RES_I2C_MASTER_SENDING_ADDRESS_FAILED          0xBA
@@ -157,6 +158,7 @@ uint16_t dln2_pin_request(uint16_t pin, uint8_t module);
 uint16_t dln2_pin_free(uint16_t pin, uint8_t module);
 
 void dln2_gpio_init(void);
+void dln2_gpio_task(void);
 bool dln2_handle_gpio(struct dln2_slot *slot);
 bool dln2_handle_i2c(struct dln2_slot *slot);
 bool dln2_handle_spi(struct dln2_slot *slot);
