@@ -220,7 +220,7 @@ bool dln2_response_u32(struct dln2_slot *slot, uint32_t val)
 
 bool dln2_response_error(struct dln2_slot *slot, uint16_t result)
 {
-    //printf("%s: handle=%u: result=0x%x (%u)\n", __func__, dln2_slot_header(slot)->handle, result, result);
+    LOG1("%s: handle=%u: result=0x%x (%u)\n", __func__, dln2_slot_header(slot)->handle, result, result);
     return _dln2_response(slot, 0, result);
 }
 

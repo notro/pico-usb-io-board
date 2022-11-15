@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include "dln2.h"
 
-#define LOG1    printf
+#define LOG1    //printf
 
 #define DLN2_PIN_MAX    32
 #define DLN2_PIN_NOT_AVAILABLE  0xff

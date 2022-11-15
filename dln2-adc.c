@@ -15,7 +15,7 @@
 #include "hardware/adc.h"
 #include "dln2.h"
 
-#define LOG1    printf
+#define LOG1    //printf
 
 #define DLN2_ADC_CMD(cmd)   ((DLN2_MODULE_ADC << 8) | (cmd))
 

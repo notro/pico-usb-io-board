@@ -16,8 +16,8 @@
 #include "hardware/sync.h"
 #include "i2c-at24.h"
 
-#define LOG1    printf
-#define LOG2    printf
+#define LOG1    //printf
+#define LOG2    //printf
 
 
 //#define PICO_FLASH_SIZE_BYTES (2 * 1024 * 1024)
@@ -68,7 +68,7 @@ static void flash_print_header(const struct at24_flash_header *hdr)
     for (uint i = 0; i < sizeof(hdr->pad_zero); i++)
         pad_zero |= hdr->pad_zero[i];
 
-    printf("%u: magic=%s wear=%llu version=%llu address=0x%02x pad_zero=%s checksum=%u\n",
+    LOG1("%u: magic=%s wear=%llu version=%llu address=0x%02x pad_zero=%s checksum=%u\n",
            flash_sector_index(hdr), hdr->magic == AT24_FLASH_HEADER_MAGIC ? "yes" : "no",
            hdr->wear, hdr->version, hdr->address, pad_zero ? "no" : "yes", hdr->checksum);
 }
@@ -117,7 +117,7 @@ static const struct at24_flash_sector *find_flash_sector(uint16_t address)
     uint64_t version = 0;
     uint32_t flash_offs;
 
-    //printf("%s: address=0x%02x\n", __func__, address);
+    LOG1("%s: address=0x%02x\n", __func__, address);
 
     flash_for_each_sector(flash_offs, 0) {
         const struct at24_flash_sector *sector = flash_address(flash_offs);
@@ -184,12 +184,12 @@ static uint32_t find_free_flash_sector(uint64_t *wear)
     for (uint i = 0; i < num_addresses; i++) {
         uint64_t version = 0;
 
-        //printf("  try address: 0x%02x\n", addresses[i]);
+        LOG1("  try address: 0x%02x\n", addresses[i]);
 
         // Find the current version so we know which one to ignore
         sector = find_flash_sector(addresses[i]);
         version = sector->header.version;
-        //printf("    version=%llu\n", version);
+        LOG1("    version=%llu\n", version);
 
         // Find the sector with the least wear that is not in use
         flash_for_each_sector(flash_offs, 0) {
