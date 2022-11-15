@@ -17,8 +17,8 @@
 
 #define CFG_DLN2_BULK_ENPOINT_SIZE  64
 
-//#undef CFG_TUSB_DEBUG
-//#define CFG_TUSB_DEBUG              2
+#undef CFG_TUSB_DEBUG
+#define CFG_TUSB_DEBUG              0
 
 #define CFG_TUD_CDC 2
 
