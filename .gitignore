@@ -1,6 +1,9 @@
 build/
 __pycache__
 
+*.sublime-project
+*.sublime-workspace
+
 gpio_pulse
 !gpio_pulse/
 *.o
