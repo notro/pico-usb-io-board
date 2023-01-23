@@ -383,6 +383,6 @@ static void dln2_gpio_irq_callback(uint gpio, uint32_t events)
 
 void dln2_gpio_init(void)
 {
-    // It's not possible to just set the callback, so use the board led as a dummy gpio
-    gpio_set_irq_enabled_with_callback(25, 0, false, &dln2_gpio_irq_callback);
+    gpio_set_irq_callback(&dln2_gpio_irq_callback);
+    irq_set_enabled(IO_IRQ_BANK0, true);
 }
