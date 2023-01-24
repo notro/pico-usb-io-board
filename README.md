@@ -14,14 +14,11 @@ See [wiki](https://github.com/notro/pico-usb-io-board/wiki) for more information
 # Build
 ```
 $ cd pico-usb-io-board
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
+$ ./build.sh
 
 ```
 
-The ```PICO_SDK_PATH``` environment variable should point to the Pico SDK.
+The ```BUILD_DIR``` environment variable can be used to put the build files elsewhere.
 
 
 # License

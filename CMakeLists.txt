@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.13)
 
 #set(TINYUSB_DEBUG_LEVEL 2)
 
-include(pico_sdk_import.cmake)
+include(pico-sdk/pico_sdk_init.cmake)
 
 project(dln2_project)
 
