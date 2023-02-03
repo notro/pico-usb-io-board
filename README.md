@@ -2,11 +2,9 @@
 
 This project turns the Raspberry Pi Pico into a USB I/O Board.
 
-It implements parts of the DLN protocol used in the Linux drivers that targets the [DLN-2 USB-I2C/SPI/GPIO Adapter](https://diolan.com/dln-2).
+It implements the USB protocol used by the dln2 Linux drivers and in addition it supports 2 CDC UARTS.
 
 <img src="./pinout.svg" width="50%">
-
-Note: UART is currently used for debugging purposes
 
 See [wiki](https://github.com/notro/pico-usb-io-board/wiki) for more information.
 
