@@ -9,9 +9,9 @@ project(dln2_project)
 pico_sdk_init()
 
 add_executable(dln2
-	main.c
-	usb_descriptors.c
-	driver.c
+    main.c
+    usb_descriptors.c
+    driver.c
     dln2.c
     dln2-pin.c
     dln2-gpio.c
@@ -24,5 +24,15 @@ add_executable(dln2
 
 target_include_directories(dln2 PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
-target_link_libraries(dln2 PRIVATE pico_stdlib tinyusb_device tinyusb_board pico_unique_id hardware_gpio hardware_i2c hardware_spi hardware_adc)
+target_link_libraries(dln2 PRIVATE
+    pico_stdlib
+    pico_unique_id
+    tinyusb_board
+    tinyusb_device
+    hardware_adc
+    hardware_gpio
+    hardware_i2c
+    hardware_spi
+)
+
 pico_add_extra_outputs(dln2)
