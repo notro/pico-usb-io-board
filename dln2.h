@@ -106,27 +106,27 @@ static inline void put_unaligned_le16(uint16_t val, void *p)
 }
 
 // http://dlnware.com/dll/Return-Code-Reference
-#define DLN2_RES_SUCCESS    0
+#define DLN2_RES_SUCCESS                                    0
 #define DLN2_RES_FAIL                                       0x83
 #define DLN2_RES_BAD_PARAMETER                              0x85
 #define DLN2_RES_INVALID_COMMAND_SIZE                       0x88
-#define DLN2_RES_INVALID_MESSAGE_SIZE                       0x8A
-#define DLN2_RES_INVALID_HANDLE                             0x8F
+#define DLN2_RES_INVALID_MESSAGE_SIZE                       0x8a
+#define DLN2_RES_INVALID_HANDLE                             0x8f
 #define DLN2_RES_NOT_IMPLEMENTED                            0x91
 #define DLN2_RES_COMMAND_NOT_SUPPORTED                      DLN2_RES_NOT_IMPLEMENTED
-#define DLN2_RES_PIN_IN_USE                                 0xA5
-#define DLN2_RES_INVALID_PORT_NUMBER                        0xA8
-#define DLN2_RES_INVALID_EVENT_TYPE                         0xA9
-#define DLN2_RES_PIN_NOT_CONNECTED_TO_MODULE                0xAA
-#define DLN2_RES_INVALID_PIN_NUMBER                         0xAB
-#define DLN2_RES_INVALID_EVENT_PERIOD                       0xAC
-#define DLN2_RES_INVALID_BUFFER_SIZE                        0xAE
-#define DLN2_RES_SPI_MASTER_INVALID_SS_VALUE                0xB9
-#define DLN2_RES_I2C_MASTER_SENDING_ADDRESS_FAILED          0xBA
-#define DLN2_RES_I2C_MASTER_SENDING_DATA_FAILED             0xBB
-#define DLN2_RES_INVALID_CHANNEL_NUMBER                     0xC0
-#define DLN2_RES_INVALID_MODE                               0xC7
-#define DLN2_RES_INVALID_VALUE                              0xE2
+#define DLN2_RES_PIN_IN_USE                                 0xa5
+#define DLN2_RES_INVALID_PORT_NUMBER                        0xa8
+#define DLN2_RES_INVALID_EVENT_TYPE                         0xa9
+#define DLN2_RES_PIN_NOT_CONNECTED_TO_MODULE                0xaa
+#define DLN2_RES_INVALID_PIN_NUMBER                         0xab
+#define DLN2_RES_INVALID_EVENT_PERIOD                       0xac
+#define DLN2_RES_INVALID_BUFFER_SIZE                        0xae
+#define DLN2_RES_SPI_MASTER_INVALID_SS_VALUE                0xb9
+#define DLN2_RES_I2C_MASTER_SENDING_ADDRESS_FAILED          0xba
+#define DLN2_RES_I2C_MASTER_SENDING_DATA_FAILED             0xbb
+#define DLN2_RES_INVALID_CHANNEL_NUMBER                     0xc0
+#define DLN2_RES_INVALID_MODE                               0xc7
+#define DLN2_RES_INVALID_VALUE                              0xe2
 
 #define DLN2_VERIFY_COMMAND_SIZE(_slot, _size)                                  \
     do {                                                                        \
