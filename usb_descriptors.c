@@ -75,13 +75,13 @@ typedef struct TU_ATTR_PACKED {
     tusb_desc_endpoint_t dln_bulk_in;
     u_int8_t cdc1_ifce_desc[TUD_CDC_DESC_LEN];
     u_int8_t cdc2_ifce_desc[TUD_CDC_DESC_LEN];
-} usbtest_source_sink_config_descriptor_t;
+} config_descriptor_t;
 
-usbtest_source_sink_config_descriptor_t source_sink_config_descriptor = {
+static config_descriptor_t config_descriptor = {
     .config = {
         .bLength = sizeof(tusb_desc_configuration_t),
         .bDescriptorType = TUSB_DESC_CONFIGURATION,
-        .wTotalLength = sizeof(usbtest_source_sink_config_descriptor_t),
+        .wTotalLength = sizeof(config_descriptor_t),
         .bNumInterfaces = MAX_N_IFCE,
         .bConfigurationValue = 1,
         .iConfiguration = DLN2_INTERFACE_NAME_IDX,
@@ -119,7 +119,7 @@ usbtest_source_sink_config_descriptor_t source_sink_config_descriptor = {
 
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
-    return (uint8_t const *)&source_sink_config_descriptor;
+    return (uint8_t const *)&config_descriptor;
 }
 
 typedef struct TU_ATTR_PACKED {
