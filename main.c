@@ -16,6 +16,8 @@
 
 #include "i2c-at24.h"
 
+#define LOG1    //printf
+
 static const uint8_t eeprom10[] = "HELLO";
 
 DEFINE_I2C_AT24C32(eeprom, 0x10, eeprom10, sizeof(eeprom10));
@@ -40,7 +42,7 @@ int main(void)
     board_init();
     tusb_init();
 
-    printf("\n\n\n\n\nPico I/O Board CFG_TUSB_DEBUG=%u\n", CFG_TUSB_DEBUG);
+    LOG1("\n\n\n\n\nPico I/O Board CFG_TUSB_DEBUG=%u\n", CFG_TUSB_DEBUG);
 
     while (1)
     {
