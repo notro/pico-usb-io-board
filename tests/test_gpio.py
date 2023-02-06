@@ -17,12 +17,11 @@ from pathlib import Path
 import subprocess
 import time
 
-gpio_unavail = (24, 23, 1, 0)
+gpio_unavail = (24, 23)
 
-# the gpio's are connected through a 330 ohm resistor
+# the gpios are connected through a 330 ohm resistor
 gpio_pairs = [(2, 3),
               (6, 7),
-              (8, 9),
               (10, 11),
               (12, 13),
               (14, 15),

@@ -18,6 +18,7 @@ add_executable(dln2
     dln2-i2c.c
     dln2-spi.c
     dln2-adc.c
+    cdc-uart.c
     i2c-at24.c
     i2c-at24-flash.c
 )

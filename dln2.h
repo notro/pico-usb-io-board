@@ -22,6 +22,7 @@
 #define DLN2_MODULE_SPI         0x02
 #define DLN2_MODULE_I2C         0x03
 #define DLN2_MODULE_ADC         0x06
+#define DLN2_MODULE_UART        0x0e
 
 enum dln2_handle {
     DLN2_HANDLE_EVENT = 0,
