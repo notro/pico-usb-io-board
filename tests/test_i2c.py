@@ -64,6 +64,7 @@ def eeprom10(i2c_busnum):
 def eeprom50(i2c_busnum):
     return eeprom(i2c_busnum, 0x50)
 
+@pytest.mark.skip()
 def test_eeprom10(eeprom10):
     #print('eeprom10:', eeprom10)
     # The last block (32 bytes) is missing (used for an internal header), read as 0xff

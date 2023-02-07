@@ -14,11 +14,15 @@
 #include "tusb.h"
 #include "pico/stdlib.h"
 
+#include "dln2.h"
 #include "cdc-uart.h"
-#include "i2c-at24.h"
+//#include "i2c-at24.h"
 
 #define LOG1    //printf
 
+/*
+ * TODO: Remove this when it's decided to drop the emulated eeprom code
+ *
 static const uint8_t eeprom10[] = "HELLO";
 
 DEFINE_I2C_AT24C32(eeprom, 0x10, eeprom10, sizeof(eeprom10));
@@ -27,6 +31,7 @@ struct dln2_i2c_device *i2c_devices[] = {
     &eeprom.base,
     NULL,
 };
+*/
 
 int main(void)
 {
@@ -36,7 +41,7 @@ int main(void)
     dln2_pin_set_available(~unavail_pins);
 
     dln2_gpio_init();
-    dln2_i2c_set_devices(i2c_devices);
+//    dln2_i2c_set_devices(i2c_devices);
 
     board_init();
     tusb_init();
