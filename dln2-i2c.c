@@ -97,18 +97,17 @@ static bool dln2_i2c_read(struct dln2_slot *slot)
     if (msg->port)
         return dln2_response_error(slot, DLN2_RES_INVALID_PORT_NUMBER);
 
-    if (!dln2_i2c_devices)
-        return dln2_response_error(slot, DLN2_RES_I2C_MASTER_SENDING_ADDRESS_FAILED);
+    if (dln2_i2c_devices) {
+        for (struct dln2_i2c_device **ptr = dln2_i2c_devices; *ptr; ptr++) {
+            struct dln2_i2c_device *dev = *ptr;
+            if (dev->address && dev->address != msg->addr)
+                continue;
 
-    for (struct dln2_i2c_device **ptr = dln2_i2c_devices; *ptr; ptr++) {
-        struct dln2_i2c_device *dev = *ptr;
-        if (dev->address && dev->address != msg->addr)
-            continue;
-
-        if (!dev->read(dev, msg->addr, rx + 2, len))
-            break;
-        put_unaligned_le16(len, rx);
-        return dln2_response(slot, len + 2);
+            if (!dev->read(dev, msg->addr, rx + 2, len))
+                break;
+            put_unaligned_le16(len, rx);
+            return dln2_response(slot, len + 2);
+        }
     }
 
     int ret = i2c_read_timeout_us(i2c_default, msg->addr, rx + 2, len, false, DLN2_I2C_TIMEOUT_US);
@@ -142,17 +141,16 @@ static bool dln2_i2c_write(struct dln2_slot *slot)
     if (msg->port)
         return dln2_response_error(slot, DLN2_RES_INVALID_PORT_NUMBER);
 
-    if (!dln2_i2c_devices)
-        return dln2_response_error(slot, DLN2_RES_I2C_MASTER_SENDING_ADDRESS_FAILED);
+    if (dln2_i2c_devices) {
+        for (struct dln2_i2c_device **ptr = dln2_i2c_devices; *ptr; ptr++) {
+            struct dln2_i2c_device *dev = *ptr;
+            if (dev->address && dev->address != msg->addr)
+                continue;
 
-    for (struct dln2_i2c_device **ptr = dln2_i2c_devices; *ptr; ptr++) {
-        struct dln2_i2c_device *dev = *ptr;
-        if (dev->address && dev->address != msg->addr)
-            continue;
-
-        if (!dev->write(dev, msg->addr, msg->buf, msg->buf_len))
-            break;
-        return dln2_response(slot, msg->buf_len);
+            if (!dev->write(dev, msg->addr, msg->buf, msg->buf_len))
+                break;
+            return dln2_response(slot, msg->buf_len);
+        }
     }
 
     int ret = i2c_write_timeout_us(i2c_default, msg->addr, msg->buf, msg->buf_len, false, DLN2_I2C_TIMEOUT_US);
