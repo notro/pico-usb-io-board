@@ -154,17 +154,15 @@ static bool dln2_gpio_pin_enable(struct dln2_slot *slot, bool enable)
         LOG1("    gpio_get_function=%u\n", fn);
 
         if (pin != LED_PIN) {
-            gpio_set_function(pin, GPIO_FUNC_SIO);
-            // http://dlnware.com/dll/Default-Configuration
-            gpio_set_dir(pin, GPIO_IN);
-            gpio_pull_up(pin);
+            gpio_init(pin);
+            gpio_pull_down(pin); // Some other function could have changed this (adc)
         }
     } else {
         int res = dln2_pin_free(pin, DLN2_MODULE_GPIO);
         if (res)
             return dln2_response_error(slot, res);
         if (pin != LED_PIN)
-            gpio_set_function(pin, GPIO_FUNC_NULL);
+            gpio_deinit(pin);
     }
     return dln2_response(slot, 0);
 }

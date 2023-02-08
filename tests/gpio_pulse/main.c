@@ -14,12 +14,12 @@ static int to_int(const char *s)
 
 static void usage(void)
 {
-    printf("Usage: gpio_pulse gpio\n");
+    printf("Usage: gpio_pulse gpio polarity\n");
 }
 
 int main(int argc, char **argv)
 {
-    if (argc != 2) {
+    if (argc != 3) {
         usage();
         return 1;
     }
@@ -30,7 +30,13 @@ int main(int argc, char **argv)
         return 1;
     }
 
-//    printf("gpio=%d\n", gpio);
+    int polarity = to_int(argv[2]);
+    if (polarity != 0 && polarity != 1) {
+        usage();
+        return 1;
+    }
+
+//    printf("gpio=%d polarity=%d\n", gpio, polarity);
 
     int result = setup();
     if (result != SETUP_OK) {
@@ -38,14 +44,9 @@ int main(int argc, char **argv)
         return 1;
     }
 
-//    // The input pin on the Pico is pulled high so start high to avoid generating an extra interrupt
-//    output_gpio(gpio, 1);
-//    setup_gpio(gpio, OUTPUT, PUD_OFF);
+    output_gpio(gpio, polarity);
+    output_gpio(gpio, !polarity);
 
-    output_gpio(gpio, 0);
-    output_gpio(gpio, 1);
-
-//    setup_gpio(gpio, INPUT, PUD_OFF);
     cleanup();
 
     return 0;

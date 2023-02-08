@@ -39,8 +39,8 @@ def chip():
 def gpio_request(chip, gpio, typ):
     line = chip.get_line(gpio)
     label = Path(sys.argv[0]).name
-    # TODO: >=v1.5: default_vals deprecated, use default_val=1
-    line.request(consumer=label, type=typ, default_vals=(1,)) # Set High to match inputs that are pulled high
+    # TODO: >=v1.5: default_vals deprecated, use default_val=0
+    line.request(consumer=label, type=typ, default_vals=(0,)) # Set low to match inputs that are pulled low
     return line
 
 def gpio_request_pair(chip, in_gpio, out_gpio, interrupt=False):
@@ -65,10 +65,10 @@ def gpio_in_out(chip, in_gpio, out_gpio):
 def gpio_interrupt(chip, in_gpio, out_gpio):
     i, o = gpio_request_pair(chip, in_gpio, out_gpio, interrupt=True)
 
-    # there's a pull-up on 'i'
+    # there's a pull-down on 'i'
 
     try:
-        for out in [0, 1]:
+        for out in [1, 0]:
             o.set_value(out)
             assert i.event_wait(1), 'No interrupt received'
             event = i.event_read()
@@ -138,15 +138,15 @@ def test_gpio_gp22_interrupt(chip, ext_gpio, edge):
     line = gpio_request(chip, 22, edge)
 
     try:
-        ext_gpio.set_value(0)
-        if edge in (gpiod.LINE_REQ_EV_BOTH_EDGES, gpiod.LINE_REQ_EV_FALLING_EDGE):
-            assert_event(line, gpiod.LineEvent.FALLING_EDGE)
-        else:
-            assert not line.event_wait(1), 'Should not have received interrupt'
-
         ext_gpio.set_value(1)
         if edge in (gpiod.LINE_REQ_EV_BOTH_EDGES, gpiod.LINE_REQ_EV_RISING_EDGE):
             assert_event(line, gpiod.LineEvent.RISING_EDGE)
+        else:
+            assert not line.event_wait(1), 'Should not have received interrupt'
+
+        ext_gpio.set_value(0)
+        if edge in (gpiod.LINE_REQ_EV_BOTH_EDGES, gpiod.LINE_REQ_EV_FALLING_EDGE):
+            assert_event(line, gpiod.LineEvent.FALLING_EDGE)
         else:
             assert not line.event_wait(1), 'Should not have received interrupt'
     finally:
@@ -156,7 +156,7 @@ def run_gpio_pulse(req):
     prog = Path(req.node.fspath).parent.joinpath('gpio_pulse/gpio_pulse')
     if not prog.is_file():
         pytest.skip('gpio_pulse is not built')
-    res = subprocess.run([prog, str(ext_gpio_num)])
+    res = subprocess.run([prog, str(ext_gpio_num), '1'])
     if res.returncode:
         print(res)
         print(res.stdout)
@@ -175,9 +175,9 @@ def test_gpio_gp22_interrupt_short_pulse(request, chip, ext_gpio, edge):
 
 def count_interrupts(in_line, out_line, delay, num):
     for i in range(num):
-        out_line.set_value(0)
-        time.sleep(delay)
         out_line.set_value(1)
+        time.sleep(delay)
+        out_line.set_value(0)
         time.sleep(delay)
 
     count = 0
