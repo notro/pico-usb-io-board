@@ -65,7 +65,7 @@ data_set_long_ids = [str(len(data)) for data in data_set_long]
 # No point in testing lots of baudrates since the device "supports" everything,
 # it just picks the closest it can do. Testing high speed is important to verify
 # that the RX FIFO doesn't overflow.
-@pytest.mark.parametrize('baudrate', [9600, 19200, 115200, 1152000])
+@pytest.mark.parametrize('baudrate', [9600, 19200, 115200, 576000, 1152000])
 class TestUart0:
     def connection(self, uarts, baudrate, bytesize, parity, stopbits, size):
         tty_uart0, tty_uart1 = uarts
@@ -107,7 +107,8 @@ class TestUart0:
 @pytest.mark.parametrize('stopbits', [1, 2])
 @pytest.mark.parametrize('parity', [serial.PARITY_NONE, serial.PARITY_EVEN, serial.PARITY_ODD])
 @pytest.mark.parametrize('bytesize', [5, 6, 7, 8])
-@pytest.mark.parametrize('baudrate', [9600, 19200, 115200, 576000])
+# Speed up testing by skipping the (s)low baud rates since they are already tested on uart0
+@pytest.mark.parametrize('baudrate', [115200, 576000])
 class TestUart1:
     def connection(self, uarts, baudrate, bytesize, parity, stopbits, size):
         tty_uart0, tty_uart1 = uarts
