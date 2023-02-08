@@ -18,6 +18,7 @@
 #include "cdc-uart.h"
 //#include "i2c-at24.h"
 
+// pico_enable_stdio_uart in CMakeList.txt
 #define LOG1    //printf
 
 /*

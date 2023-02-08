@@ -25,6 +25,9 @@ add_executable(dln2
 
 target_include_directories(dln2 PRIVATE ${CMAKE_CURRENT_LIST_DIR})
 
+# enable=1 to get debug output on uart0
+pico_enable_stdio_uart(dln2 0)
+
 target_link_libraries(dln2 PRIVATE
     pico_stdlib
     pico_unique_id
