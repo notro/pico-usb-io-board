@@ -44,7 +44,7 @@ tusb_desc_device_t const device_descriptor = {
 
     .idVendor        	= 0x1d50, // https://github.com/openmoko/openmoko-usb-oui#conditions
     .idProduct       	= 0x6170,
-    .bcdDevice       	= 0x0011,
+    .bcdDevice       	= 0x0012,
 
     .iManufacturer      = MANUFACTURER_IDX,
     .iProduct           = PRODUCT_IDX,
